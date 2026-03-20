@@ -7,41 +7,30 @@
   body { font-family: 'Comic Sans MS', cursive; background: #ffe6f0; margin: 0; padding: 0; }
   h1 { text-align:center; color:#ff3399; padding:20px 0; }
 
-  /* FB Input */
   #fbInputSection { text-align:center; margin-bottom:20px; }
   #fbName { padding:8px 12px; border-radius:8px; border:1px solid #ff99cc; width:200px; }
   #confirmFB { padding:8px 15px; border:none; border-radius:8px; background:#ff66b2; color:#fff; cursor:pointer; font-weight:bold; transition:0.3s; }
   #confirmFB:hover { background:#ff3399; }
 
-  /* Tab Menu */
   .tab { display: flex; justify-content:center; margin-bottom: 20px; }
-  .tab button {
-    background-color: #ffcce6;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 12px 25px;
-    margin: 0 5px;
-    border-radius: 15px;
-    font-weight: bold;
-    transition: 0.3s;
-  }
+  .tab button { background-color: #ffcce6; border: none; outline: none; cursor: pointer; padding: 12px 25px; margin: 0 5px; border-radius: 15px; font-weight: bold; transition: 0.3s; }
   .tab button:hover { background-color: #ff99cc; }
   .tab button.active { background-color: #ff66b2; color:#fff; }
 
-  /* Tab Content */
   .tabcontent { display: none; max-width: 600px; margin: auto; background: #fff0f5; padding: 20px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-  button.actionBtn {
-    background-color: #ff99cc;
-    border:none; padding: 10px 20px; border-radius:10px; cursor:pointer; color:#fff; font-weight:bold; transition:0.3s;
-  }
+
+  button.actionBtn { background-color: #ff99cc; border:none; padding: 10px 20px; border-radius:10px; cursor:pointer; color:#fff; font-weight:bold; transition:0.3s; }
   button.actionBtn:hover { background-color:#ff66b2; }
 
   #gachaResult, #tarotResult, #chatBox, #giftResult { margin-top:15px; min-height:40px; }
 
   .chatMessage { margin:5px 0; padding:8px; background:#ffd9ec; border-radius:10px; animation: slideDown 0.5s; display:flex; align-items:center; }
   .chatMessage span { margin-left:8px; }
-  @keyframes slideDown { 0% {opacity:0; transform:translateY(-20px);} 100% {opacity:1; transform:translateY(0);} }
+
+  @keyframes slideDown {
+    0% {opacity:0; transform:translateY(-20px);}
+    100% {opacity:1; transform:translateY(0);}
+  }
 </style>
 </head>
 <body>
@@ -60,19 +49,16 @@
   <button class="tablinks" onclick="openTab(event,'Chat')">Lời động viênn</button>
 </div>
 
-<!-- Mục 1 -->
 <div id="Gacha" class="tabcontent" style="display:block;">
   <button class="actionBtn" onclick="gacha()">Rút thưởng may mắn 💌</button>
   <div id="gachaResult"></div>
 </div>
 
-<!-- Mục 2 -->
 <div id="Tarot" class="tabcontent">
   <button class="actionBtn" onclick="drawTarot()">Rút bài Tarot nào ng dpp 🔮</button>
   <div id="tarotResult"></div>
 </div>
 
-<!-- Mục 3 -->
 <div id="Chat" class="tabcontent">
   <button class="actionBtn" onclick="addChat()">Nhận lời chúc của em nhaa 🌸</button>
   <div id="chatBox"></div>
@@ -83,13 +69,33 @@
 <script>
 // --- FB Control ---
 let playerFB = "";
-let gachaUsed = {};  // lưu những FB đã rút gacha
-let chatUsed = {};   // lưu FB đã chơi mục 3
+
+// 🆕 thêm lưu danh sách FB
+let usedFBs = JSON.parse(localStorage.getItem("usedFBs")) || [];
+
+let gachaUsed = {};
+let chatUsed = {};
 
 function confirmFB() {
   const name = document.getElementById('fbName').value.trim();
-  if(name === "") { alert("Nhập tên FB đi ng dpp 😆"); return; }
+
+  if(name === "") {
+    alert("Nhập tên FB đi ng dpp 😆");
+    return;
+  }
+
+  // 🆕 check trùng
+  if(usedFBs.includes(name)) {
+    alert("FB này đã chơi rồi, không chơi lại được nha 😏");
+    return;
+  }
+
   playerFB = name;
+
+  // 🆕 lưu lại
+  usedFBs.push(name);
+  localStorage.setItem("usedFBs", JSON.stringify(usedFBs));
+
   document.getElementById('fbName').disabled = true;
   document.getElementById('confirmFB').disabled = true;
   document.getElementById('fbStatus').innerHTML = `Xin chào ${playerFB}! ng dp chơi vui vẻ ạa 💖`;
@@ -101,19 +107,28 @@ function openTab(evt, tabName) {
   for(let i=0;i<tabcontent.length;i++) tabcontent[i].style.display="none";
 
   const tablinks = document.getElementsByClassName("tablinks");
-  for(let i=0;i<tablinks.length;i++) tablinks[i].className = tablinks[i].className.replace(" active","");
-  
+  for(let i=0;i<tablinks.length;i++)
+    tablinks[i].className = tablinks[i].className.replace(" active","");
+
   document.getElementById(tabName).style.display="block";
   evt.currentTarget.className += " active";
 }
 
-// --- Mục 1: Gacha câu ---
+// --- Mục 1 ---
 function gacha() {
-  if(playerFB==="") { alert("Xác nhận tên FB đi ng dpp!"); return; }
-  if(gachaUsed[playerFB]) { alert("ng dp chỉ được rút 1 lần thoiii 💌"); return; }
-  
+  if(playerFB==="") {
+    alert("Xác nhận tên FB đi ng dpp!");
+    return;
+  }
+
+  if(gachaUsed[playerFB]) {
+    alert("ng dp chỉ được rút 1 lần thoiii 💌");
+    return;
+  }
+
   const rand=Math.random()*100;
   let count;
+
   if(rand<92) count=1;
   else if(rand<97) count=2;
   else if(rand<98.5) count=3;
@@ -121,87 +136,119 @@ function gacha() {
   else count=5;
 
   let result='';
-  for(let i=0;i<count;i++) result += `Chúc mừng ng dp dc free ${i+1} câuu hãy chụp lại và gửi ytho nhé🌟<br>`;
+  for(let i=0;i<count;i++)
+    result += `Chúc mừng ng dp dc free ${i+1} câuu hãy chụp lại và gửi ytho nhé🌟<br>`;
+
   document.getElementById('gachaResult').innerHTML=result;
   gachaUsed[playerFB]=true;
 }
 
-// --- Mục 2: Mini game Tarot ---
+// --- Mục 2 ---
 const tarotDeck = [
-    {name:"The Fool", msg:"Bắt đầu mới, cơ hội mới"},
-    {name:"The Magician", msg:"Sử dụng khả năng, sáng tạo"},
-    {name:"The High Priestess", msg:"Trực giác và bí ẩn"},
-    {name:"The Empress", msg:"Sáng tạo và nuôi dưỡng"},
-    {name:"The Emperor", msg:"Kiểm soát và trật tự"},
-    {name:"The Hierophant", msg:"Học hỏi và hướng dẫn"},
-    {name:"The Lovers", msg:"Tình yêu và lựa chọn"},
-    {name:"The Chariot", msg:"Chiến thắng và ý chí"},
-    {name:"Strength", msg:"Sức mạnh nội tâm"},
-    {name:"The Hermit", msg:"Tĩnh lặng và tự tìm hiểu"},
-    {name:"Wheel of Fortune", msg:"Vận may và thay đổi"},
-    {name:"Justice", msg:"Cân bằng và công lý"},
-    {name:"The Hanged Man", msg:"Nhìn nhận khác biệt"},
-    {name:"Death", msg:"Kết thúc để bắt đầu"},
-    {name:"Temperance", msg:"Cân bằng và điều độ"},
-    {name:"The Devil", msg:"Kiểm soát và cám dỗ"},
-    {name:"The Tower", msg:"Thay đổi đột ngột"},
-    {name:"The Star", msg:"Hy vọng và cảm hứng"},
-    {name:"The Moon", msg:"Trực giác và ảo giác"},
-    {name:"The Sun", msg:"Niềm vui và thành công"},
-    {name:"Judgement", msg:"Tái sinh và quyết định"},
-    {name:"The World", msg:"Hoàn thành và tổng hợp"}
+  {name:"The Fool", msg:"Bắt đầu mới, cơ hội mới"},
+  {name:"The Magician", msg:"Sử dụng khả năng, sáng tạo"},
+  {name:"The High Priestess", msg:"Trực giác và bí ẩn"},
+  {name:"The Empress", msg:"Sáng tạo và nuôi dưỡng"},
+  {name:"The Emperor", msg:"Kiểm soát và trật tự"},
+  {name:"The Hierophant", msg:"Học hỏi và hướng dẫn"},
+  {name:"The Lovers", msg:"Tình yêu và lựa chọn"},
+  {name:"The Chariot", msg:"Chiến thắng và ý chí"},
+  {name:"Strength", msg:"Sức mạnh nội tâm"},
+  {name:"The Hermit", msg:"Tĩnh lặng và tự tìm hiểu"},
+  {name:"Wheel of Fortune", msg:"Vận may và thay đổi"},
+  {name:"Justice", msg:"Cân bằng và công lý"},
+  {name:"The Hanged Man", msg:"Nhìn nhận khác biệt"},
+  {name:"Death", msg:"Kết thúc để bắt đầu"},
+  {name:"Temperance", msg:"Cân bằng và điều độ"},
+  {name:"The Devil", msg:"Kiểm soát và cám dỗ"},
+  {name:"The Tower", msg:"Thay đổi đột ngột"},
+  {name:"The Star", msg:"Hy vọng và cảm hứng"},
+  {name:"The Moon", msg:"Trực giác và ảo giác"},
+  {name:"The Sun", msg:"Niềm vui và thành công"},
+  {name:"Judgement", msg:"Tái sinh và quyết định"},
+  {name:"The World", msg:"Hoàn thành và tổng hợp"}
 ];
+
 function drawTarot() {
-  if(playerFB==="") { alert("Xác nhận tên FB trước nha ng dppp!"); return; }
+  if(playerFB==="") {
+    alert("Xác nhận tên FB trước nha ng dppp!");
+    return;
+  }
+
   const card = tarotDeck[Math.floor(Math.random()*tarotDeck.length)];
-  document.getElementById('tarotResult').innerHTML=`<b>${card.name}</b>: ${card.msg}`;
+  document.getElementById('tarotResult').innerHTML = `<b>${card.name}</b>: ${card.msg}`;
 }
 
-// --- Mục 3: Chat tích cực ---
+// --- Mục 3 ---
 const chatMessages = [
-    "dc ng dp sử dụng dịch vụ em rất vuii! ❤️",
-    "chúc ng dp luôn bình an 🌸",
-    "ng dp cả em giỏi sieeuuu cấppp! 💪",
-    "chúc ng dp luôn khỏe mạnh 😄",
-    "Mọi chuyện sẽ ổn thôi 🌈",
-    "ng dp xứng đáng hạnh phúc ✨",
-    "nhớ ngủ sớm nha ng dpp 💤",
-    "em tin ng dp của emm 🌟",
-    "nhớ ăn đủ bữa nhaaa💖",
-    "chúc ng dp luôn xinh dpp! 🌹"
+  "dc ng dp sử dụng dịch vụ em rất vuii! ❤️",
+  "chúc ng dp luôn bình an 🌸",
+  "ng dp cả em giỏi sieeuuu cấppp! 💪",
+  "chúc ng dp luôn khỏe mạnh 😄",
+  "Mọi chuyện sẽ ổn thôi 🌈",
+  "ng dp xứng đáng hạnh phúc ✨",
+  "nhớ ngủ sớm nha ng dpp 💤",
+  "em tin ng dp của emm 🌟",
+  "nhớ ăn đủ bữa nhaaa💖",
+  "chúc ng dp luôn xinh dpp! 🌹"
 ];
+
 let chatCount=0;
 
 function addChat(){
-  if(playerFB==="") { alert("Xác nhận tên FB trước nha ng dpp!"); return; }
-  if(chatUsed[playerFB]) { alert("ng dp chỉ được chơi mục Chat 1 lần thôi 🌸"); return; }
-  
+  if(playerFB==="") {
+    alert("Xác nhận tên FB trước nha ng dpp!");
+    return;
+  }
+
+  if(chatUsed[playerFB]) {
+    alert("ng dp chỉ được chơi mục Chat 1 lần thôi 🌸");
+    return;
+  }
+
   const msg = chatMessages[Math.floor(Math.random()*chatMessages.length)];
   const chatBox=document.getElementById('chatBox');
+
   const div=document.createElement('div');
   div.className='chatMessage';
   div.innerHTML=`💌 <span>${msg}</span>`;
+
   chatBox.appendChild(div);
   chatCount++;
 }
 
 function checkGift(){
-  if(playerFB==="") { alert("Xác nhận tên FB trước nhaa ng dp!"); return; }
-  if(chatUsed[playerFB]) { alert("ng dp đã nhận quà rồi 🌸"); return; }
-  if(chatCount<10){ alert("Chưa đủ 10 tin nhắn, không được mở đâuu!"); return; }
+  if(playerFB==="") {
+    alert("Xác nhận tên FB trước nhaa ng dp!");
+    return;
+  }
+
+  if(chatUsed[playerFB]) {
+    alert("ng dp đã nhận quà rồi 🌸");
+    return;
+  }
+
+  if(chatCount<10){
+    alert("Chưa đủ 10 tin nhắn, không được mở đâuu!");
+    return;
+  }
 
   chatCount=0;
   chatUsed[playerFB]=true;
+
   const rand=Math.random()*100;
   let giftMsg="";
+
   if(rand<0.5) giftMsg="🎁 chúc ng dp sẽ nhận thông điệp tích cực lần sau=))))!";
   else if(rand<5.5) giftMsg="🎁 Giảm giá 1% cho lần xem tiếp theo, chúc ng dp bình an!";
-  else if(rand<97.5) giftMsg="🎁  chúc ng dp may mắn lần sau=)))";
+  else if(rand<97.5) giftMsg="🎁 chúc ng dp may mắn lần sau=)))";
   else if(rand<99) giftMsg="🎁 Giảm giá 3% cho lần tiếp theo, adiii ng dp hên ghê!";
   else giftMsg="🎁 Giảm giá 5% cho lần tiếp theo, ng dp hên gheee áaaaa!";
+
   document.getElementById('giftResult').innerHTML=giftMsg;
   document.getElementById('chatBox').innerHTML="";
 }
 </script>
+
 </body>
 </html>
